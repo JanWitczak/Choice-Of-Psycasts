@@ -71,7 +71,7 @@ namespace RimWorld
 					{
 						Parent.abilities.GainAbility(Psycast);
 						Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Remove(Level);
-					}, ContentFinder<Texture2D>.Get(Psycast.iconPath), Color.white);
+					}, ContentFinder<Texture2D>.Get(Psycast.iconPath), Color.white, MenuOptionPriority.Default, null, null, 30, Rect => Verse.Widgets.InfoCardButton(Rect.ScaledBy(0.7f), Psycast));
 					options.Add(option);
 				}
 				if (ChoiceOfPsycastsMod.Settings.PsycastOptions > 1)
