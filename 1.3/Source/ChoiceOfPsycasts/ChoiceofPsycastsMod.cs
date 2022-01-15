@@ -67,12 +67,15 @@ namespace RimWorld
 				List<FloatMenuOption> options = new List<FloatMenuOption>();
 				foreach (AbilityDef Psycast in AbilityLibrary.Psycasts[Level])
 				{
-					FloatMenuOption option = new FloatMenuOption(Psycast.label, delegate
+					if (Parent.abilities.GetAbility(Psycast) == null)
 					{
-						Parent.abilities.GainAbility(Psycast);
-						Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Remove(Level);
-					}, ContentFinder<Texture2D>.Get(Psycast.iconPath), Color.white, MenuOptionPriority.Default, null, null, 30, Rect => Verse.Widgets.InfoCardButton(Rect.ScaledBy(0.7f), Psycast));
-					options.Add(option);
+						FloatMenuOption option = new FloatMenuOption(Psycast.label, delegate
+						{
+							Parent.abilities.GainAbility(Psycast);
+							Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Remove(Level);
+						}, ContentFinder<Texture2D>.Get(Psycast.iconPath), Color.white, MenuOptionPriority.Default, null, null, 30, Rect => Verse.Widgets.InfoCardButton(Rect.ScaledBy(0.7f), Psycast));
+						options.Add(option);
+					}
 				}
 				if (ChoiceOfPsycastsMod.Settings.PsycastOptions > 1)
 				{
@@ -86,6 +89,11 @@ namespace RimWorld
 				{
 					FloatMenu menu = new FloatMenu(options);
 					Find.WindowStack.Add(menu);
+				}
+				else
+				{
+					Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Remove(Level);
+					Log.Error("Choice of Psycasts: No psycasts of level " + Level + " availibile to learn for pawn " + Parent.Name + ".");
 				}
 			}
 		}
