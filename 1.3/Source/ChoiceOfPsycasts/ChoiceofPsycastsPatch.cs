@@ -54,9 +54,9 @@ namespace RimWorld
 						if (pawn.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast == null) pawn.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast = new List<int>();
 						pawn.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Add(pawn.GetPsylinkLevel());
 					}
-					else Log.Error("Tried giving incorrect level Psycast");
+					else Log.Error("ChoiceOfPsycasts: Tried giving incorrect level Psycast");
 				}
-				else Log.Error("Pawn doesn't have ChoiceOfPsycastsComp.");
+				else Log.Error("ChoiceOfPsycasts: Pawn doesn't have ChoiceOfPsycastsComp.");
 			}
 			public static void AddDummyPsycasts(ref Pawn pawn)
 			{

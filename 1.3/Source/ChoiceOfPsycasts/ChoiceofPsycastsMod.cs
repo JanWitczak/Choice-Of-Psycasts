@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using Verse;
 
@@ -46,6 +47,17 @@ namespace RimWorld
 				base.Initialize(props);
 				CanLearnPsycast = new List<int>();
 			}
+
+			public override void ReceiveCompSignal(string signal)
+			{
+				Regex reg = new Regex("^ChoiceOfPsycasts:(([1-6])|<([1-6]),([1-6])>)$");
+				Match m = reg.Match(signal);
+				if (m.Success)
+				{
+					if (m.Groups[1].Value != "") Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Add(int.Parse(m.Groups[1].Value));
+				}
+				base.ReceiveCompSignal(signal);
+			}
 		}
 
 		class LearnPsycasts : Command_Action
@@ -64,10 +76,6 @@ namespace RimWorld
 
 			public void Choice()
 			{
-				if (ChoiceOfPsycastsMod.Settings.PsycastOptions == 0)
-				{
-					return;
-				}
 				List<FloatMenuOption> options = new List<FloatMenuOption>();
 				foreach (AbilityDef Psycast in AbilityLibrary.Psycasts[Level])
 				{
@@ -97,7 +105,7 @@ namespace RimWorld
 				else
 				{
 					Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Remove(Level);
-					Log.Error("Choice of Psycasts: No psycasts of level " + Level + " availibile to learn for pawn " + Parent.Name + ".");
+					Log.Error("ChoiceOfPsycasts: No psycasts of level " + Level + " availibile to learn for pawn " + Parent.Name + ".");
 				}
 			}
 		}
