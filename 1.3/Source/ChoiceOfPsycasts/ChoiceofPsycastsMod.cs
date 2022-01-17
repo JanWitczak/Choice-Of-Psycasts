@@ -21,6 +21,7 @@ namespace RimWorld
 		public class ChoiceOfPsycastsComp : ThingComp
 		{
 			public List<int> CanLearnPsycast;
+			public List<Tuple<int, int>> CanLearnPsycastCustom;
 			public Pawn Parent
 			{
 				get { return (Pawn)this.parent; }
@@ -28,33 +29,43 @@ namespace RimWorld
 
 			public override IEnumerable<Gizmo> CompGetGizmosExtra()
 			{
-				if (ChoiceOfPsycastsMod.Settings.PsycastOptions > 0 && CanLearnPsycast != null)
+				if (ChoiceOfPsycastsMod.Settings.PsycastOptions > 0)
 				{
 					foreach (var i in CanLearnPsycast)
 					{
 						yield return new LearnPsycasts(i, Parent);
 					}
 				}
+				foreach (var i in CanLearnPsycastCustom)
+				{
+					yield return new LearnPsycasts(i, Parent);
+				}
 			}
 
 			public override void PostExposeData()
 			{
 				Scribe_Collections.Look(ref CanLearnPsycast, false, "CanLearnPsycast", LookMode.Value);
+				if (CanLearnPsycast == null) CanLearnPsycast = new List<int>();
+				Scribe_Collections.Look(ref CanLearnPsycastCustom, false, "CanLearnPsycastCustom", LookMode.Value);
+				if (CanLearnPsycastCustom == null) CanLearnPsycastCustom = new List<Tuple<int, int>>();
 			}
-
-			public override void Initialize(CompProperties props)
+			public override void PostPostMake()
 			{
-				base.Initialize(props);
 				CanLearnPsycast = new List<int>();
+				CanLearnPsycastCustom = new List<Tuple<int, int>>();
 			}
 
 			public override void ReceiveCompSignal(string signal)
 			{
-				Regex reg = new Regex("^ChoiceOfPsycasts:(([1-6])|<([1-6]),([1-6])>)$");
+				Regex reg = new Regex("^ChoiceOfPsycasts:<([1-6]),([1-6])>$");
 				Match m = reg.Match(signal);
 				if (m.Success)
 				{
-					if (m.Groups[1].Value != "") Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Add(int.Parse(m.Groups[1].Value));
+						int min = int.Parse(m.Groups[0].Value);
+						int max = int.Parse(m.Groups[1].Value);
+						if (Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom == null) Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom = new List<Tuple<int, int>>();
+						if (min < max) Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom.Add(new Tuple<int,int>(min,max));
+						else Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom.Add(new Tuple<int, int>(max, min));
 				}
 				base.ReceiveCompSignal(signal);
 			}
@@ -63,6 +74,7 @@ namespace RimWorld
 		class LearnPsycasts : Command_Action
 		{
 			private int Level;
+			private Tuple<int, int> Range = null;
 			Pawn Parent;
 			public LearnPsycasts(int level, Pawn pawn)
 			{
@@ -70,11 +82,21 @@ namespace RimWorld
 				Level = level;
 				Parent = pawn;
 				defaultLabel = $"{"LearnAPsycast".Translate()}";
-				defaultDesc = $"{"LearnAPsycastDesc".Translate()}" + Level.ToString();
+				defaultDesc = $"{"LearnAPsycastDesc".Translate()}";
 				icon = ContentFinder<Texture2D>.Get("Level" + level.ToString());
 			}
 
-			public void Choice()
+			public LearnPsycasts(Tuple<int, int> range, Pawn pawn)
+			{
+				action = ChoiceCustom;
+				Range = range;
+				Parent = pawn;
+				defaultLabel = $"{"LearnAPsycast".Translate()}";
+				defaultDesc = $"{"LearnAPsycastDesc".Translate()}";
+				if (Range.Item1 != Range.Item2) icon = ContentFinder<Texture2D>.Get("Misc");
+				else icon = ContentFinder<Texture2D>.Get("Level" + Range.Item1.ToString());
+			}
+			private void Choice()
 			{
 				List<FloatMenuOption> options = new List<FloatMenuOption>();
 				foreach (AbilityDef Psycast in AbilityLibrary.Psycasts[Level])
@@ -104,8 +126,47 @@ namespace RimWorld
 				}
 				else
 				{
-					Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Remove(Level);
-					Log.Error("ChoiceOfPsycasts: No psycasts of level " + Level + " availibile to learn for pawn " + Parent.Name + ".");
+					options.Add(new FloatMenuOption("No Availible Psycasts", delegate { Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Remove(Level); }));
+					FloatMenu menu = new FloatMenu(options);
+					Find.WindowStack.Add(menu);
+				}
+			}
+			private void ChoiceCustom()
+			{
+				List<FloatMenuOption> options = new List<FloatMenuOption>();
+				foreach (var i in Enumerable.Range(Range.Item1, Range.Item2 - Range.Item1 + 1))
+				{
+					foreach (AbilityDef Psycast in AbilityLibrary.Psycasts[i])
+					{
+						if (!Parent.abilities.AllAbilitiesForReading.Exists(x => x.def.defName == Psycast.defName))
+						{
+							FloatMenuOption option = new FloatMenuOption(Psycast.label, delegate
+							{
+								Parent.abilities.GainAbility(Psycast);
+								Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom.Remove(Range);
+							}, ContentFinder<Texture2D>.Get(Psycast.iconPath), Color.white, MenuOptionPriority.Default, null, null, 30, Rect => Verse.Widgets.InfoCardButton(Rect.ScaledBy(0.7f), Psycast));
+							options.Add(option);
+						}
+					}
+				}
+				if (ChoiceOfPsycastsMod.Settings.PsycastOptions > 1)
+				{
+					System.Random rnd = new System.Random(Range.Item1 + Range.Item2 + Parent.abilities.abilities.Count + Parent.GetHashCode());
+					foreach (var i in Enumerable.Range(0, Math.Max(options.Count() - ChoiceOfPsycastsMod.Settings.PsycastOptions, 0)))
+					{
+						options.RemoveAt(rnd.Next(options.Count()));
+					}
+				}
+				if (options.Count > 0)
+				{
+					FloatMenu menu = new FloatMenu(options);
+					Find.WindowStack.Add(menu);
+				}
+				else
+				{
+					options.Add(new FloatMenuOption("No Availible Psycasts", delegate { Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom.Remove(Range); }));
+					FloatMenu menu = new FloatMenu(options);
+					Find.WindowStack.Add(menu);
 				}
 			}
 		}
