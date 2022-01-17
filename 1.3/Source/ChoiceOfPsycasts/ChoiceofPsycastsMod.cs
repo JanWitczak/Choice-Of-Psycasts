@@ -27,7 +27,7 @@ namespace RimWorld
 
 			public override IEnumerable<Gizmo> CompGetGizmosExtra()
 			{
-				if (CanLearnPsycast != null)
+				if (ChoiceOfPsycastsMod.Settings.PsycastOptions > 0 && CanLearnPsycast != null)
 				{
 					foreach (var i in CanLearnPsycast)
 					{
@@ -64,10 +64,14 @@ namespace RimWorld
 
 			public void Choice()
 			{
+				if (ChoiceOfPsycastsMod.Settings.PsycastOptions == 0)
+				{
+					return;
+				}
 				List<FloatMenuOption> options = new List<FloatMenuOption>();
 				foreach (AbilityDef Psycast in AbilityLibrary.Psycasts[Level])
 				{
-					if (Parent.abilities.GetAbility(Psycast) == null)
+					if (!Parent.abilities.AllAbilitiesForReading.Exists(x => x.def.defName == Psycast.defName))
 					{
 						FloatMenuOption option = new FloatMenuOption(Psycast.label, delegate
 						{
@@ -102,11 +106,18 @@ namespace RimWorld
 		public static class AbilityLibrary
 		{
 			public static Dictionary<int, List<AbilityDef>> Psycasts = new Dictionary<int, List<AbilityDef>>();
+			public static Dictionary<int, Ability> DummyPsycasts = new Dictionary<int, Ability>();
 			static AbilityLibrary()
 			{
 				foreach (var i in Enumerable.Range(1, 6))
 				{
 					Psycasts.Add(i, new List<AbilityDef>());
+					DummyPsycasts.Add(i, new Ability());
+					{
+						DummyPsycasts[i].def = new AbilityDef();
+						DummyPsycasts[i].def.defName = "DummyPsycast" + i.ToString();
+						DummyPsycasts[i].def.level = i;
+					}
 				}
 				List<AbilityDef> Abilities = DefDatabase<AbilityDef>.AllDefsListForReading;
 				foreach (AbilityDef Ability in Abilities)
@@ -144,8 +155,10 @@ namespace RimWorld
 				listingStandard.Begin(inRect);
 				if (Settings.PsycastOptions == 1)
 					listingStandard.Label("Psycast Options: All");
+				else if (Settings.PsycastOptions == 0)
+					listingStandard.Label("Psycast Options: No free Psycasts");
 				else listingStandard.Label("Psycast Options: " + Settings.PsycastOptions.ToString());
-				Settings.PsycastOptions = (int)Math.Round(listingStandard.Slider(Settings.PsycastOptions, 1, 5), 0);
+				Settings.PsycastOptions = (int)Math.Round(listingStandard.Slider(Settings.PsycastOptions, 0, 5), 0);
 				listingStandard.End();
 				base.DoSettingsWindowContents(inRect);
 			}
