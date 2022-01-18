@@ -61,13 +61,12 @@ namespace RimWorld
 				Match m = reg.Match(signal);
 				if (m.Success)
 				{
-						int min = int.Parse(m.Groups[0].Value);
-						int max = int.Parse(m.Groups[1].Value);
+						int min = int.Parse(m.Groups[1].Value);
+						int max = int.Parse(m.Groups[2].Value);
 						if (Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom == null) Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom = new List<Tuple<int, int>>();
 						if (min < max) Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom.Add(new Tuple<int,int>(min,max));
 						else Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom.Add(new Tuple<int, int>(max, min));
 				}
-				base.ReceiveCompSignal(signal);
 			}
 		}
 

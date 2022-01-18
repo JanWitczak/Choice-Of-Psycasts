@@ -60,7 +60,7 @@ namespace RimWorld
 			}
 			public static void AddDummyPsycasts(ref Pawn pawn)
 			{
-				pawn.abilities.abilities.Add(AbilityLibrary.DummyPsycasts[pawn.GetPsylinkLevel() + 1]);
+				if (pawn.GetPsylinkLevel() < 6) pawn.abilities.abilities.Add(AbilityLibrary.DummyPsycasts[pawn.GetPsylinkLevel() + 1]);
 			}
 		}
 	}
