@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using Verse;
+using RimWorld;
 
-namespace RimWorld
-{
 	namespace ChoiceOfPsycasts
 	{
 
@@ -236,4 +235,3 @@ namespace RimWorld
 			}
 		}
 	}
-}

@@ -48,6 +48,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChoiceofPsycastsIntegrations.cs" />
     <Compile Include="ChoiceofPsycastsMod.cs" />
     <Compile Include="ChoiceofPsycastsPatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
