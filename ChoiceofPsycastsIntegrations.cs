@@ -4,15 +4,14 @@ using System.Reflection;
 
 namespace ChoiceOfPsycasts
 {
-	[StaticConstructorOnStartup]
-	public class UpgradablePsycastsFrameworkIntegration
+	class UpgradablePsycastsFrameworkIntegration
 	{
-		static public Type PUPExtension;
-		static public FieldInfo PUPField;
-		static UpgradablePsycastsFrameworkIntegration()
+		public Type UPFExtension;
+		public FieldInfo UPFUgradeOnlyField;
+		public UpgradablePsycastsFrameworkIntegration()
 		{
-			PUPExtension = Type.GetType("PsycastUpgradeFramework.PsycastExtension, PsycastUpgradeFramework", false);
-			if (PUPExtension != null) PUPField = PUPExtension.GetField("UpgradeOnly");
+			UPFExtension = Type.GetType("PsycastUpgradeFramework.PsycastExtension, PsycastUpgradeFramework");
+			UPFUgradeOnlyField = UPFExtension.GetField("upgradeOnly");
 		}
 	}
 }
