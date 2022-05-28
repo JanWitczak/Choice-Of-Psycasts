@@ -28,14 +28,20 @@ namespace ChoiceOfPsycasts
 		{
 			if (ChoiceOfPsycastsMod.Settings.PsycastOptions > 0)
 			{
-				foreach (var i in CanLearnPsycast)
+				if (CanLearnPsycast != null)
+				{
+					foreach (var i in CanLearnPsycast)
+					{
+						yield return new LearnPsycasts(i, Parent);
+					}
+				}
+			}
+			if (CanLearnPsycastCustom != null)
+			{
+				foreach (var i in CanLearnPsycastCustom)
 				{
 					yield return new LearnPsycasts(i, Parent);
 				}
-			}
-			foreach (var i in CanLearnPsycastCustom)
-			{
-				yield return new LearnPsycasts(i, Parent);
 			}
 		}
 		public override void PostExposeData()
