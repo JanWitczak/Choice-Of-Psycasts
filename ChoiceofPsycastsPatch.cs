@@ -59,7 +59,10 @@ namespace ChoiceOfPsycasts
 		}
 		public static void AddDummyPsycasts(ref Pawn pawn)
 		{
-			if (pawn.GetPsylinkLevel() < 6) pawn.abilities.abilities.Add(AbilityLibrary.DummyPsycasts[pawn.GetPsylinkLevel() + 1]);
+			if (pawn.GetComp<ChoiceOfPsycastsComp>() != null)
+			{
+				if (pawn.GetPsylinkLevel() < 6) pawn.abilities.abilities.Add(AbilityLibrary.DummyPsycasts[pawn.GetPsylinkLevel() + 1]);
+			}
 		}
 	}
 }
