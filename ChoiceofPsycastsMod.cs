@@ -17,8 +17,8 @@ namespace ChoiceOfPsycasts
 	}
 	public class ChoiceOfPsycastsComp : ThingComp
 	{
-		public List<int> CanLearnPsycast;
-		public List<Tuple<int, int>> CanLearnPsycastCustom;
+		public List<int> CanLearnPsycast = null;
+		public List<Tuple<int, int>> CanLearnPsycastCustom = null;
 		public Pawn Parent
 		{
 			get { return (Pawn)this.parent; }
@@ -40,15 +40,16 @@ namespace ChoiceOfPsycasts
 		}
 		public override void PostExposeData()
 		{
-			Scribe_Collections.Look(ref CanLearnPsycast, false, "CanLearnPsycast", LookMode.Value);
-			if (CanLearnPsycast == null) CanLearnPsycast = new List<int>();
-			Scribe_Collections.Look(ref CanLearnPsycastCustom, false, "CanLearnPsycastCustom", LookMode.Value);
-			if (CanLearnPsycastCustom == null) CanLearnPsycastCustom = new List<Tuple<int, int>>();
-		}
-		public override void PostPostMake()
-		{
-			CanLearnPsycast = new List<int>();
-			CanLearnPsycastCustom = new List<Tuple<int, int>>();
+			if (Scribe.mode == LoadSaveMode.Saving)
+			{
+				if (!CanLearnPsycast.NullOrEmpty()) Scribe_Collections.Look(ref CanLearnPsycast, false, "CanLearnPsycast", LookMode.Value);
+				if (!CanLearnPsycastCustom.NullOrEmpty()) Scribe_Collections.Look(ref CanLearnPsycastCustom, false, "CanLearnPsycastCustom", LookMode.Value);
+			}
+			else
+			{
+				Scribe_Collections.Look(ref CanLearnPsycast, false, "CanLearnPsycast", LookMode.Value);
+				Scribe_Collections.Look(ref CanLearnPsycastCustom, false, "CanLearnPsycastCustom", LookMode.Value);
+			}
 		}
 		public override void ReceiveCompSignal(string signal)
 		{
