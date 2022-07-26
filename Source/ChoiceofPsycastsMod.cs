@@ -208,7 +208,6 @@ namespace ChoiceOfPsycasts
 			}
 		}
 	}
-	[StaticConstructorOnStartup]
 	public class ChoiceOfPsycastsMod : Verse.Mod
 	{
 		public static RimWorld.ChoiceOfPsycasts.ChoiceOfPsycastsSettings Settings;

@@ -6,12 +6,13 @@ using RimWorld;
 
 namespace ChoiceOfPsycasts
 {
-	public class HarmonyPatches : Verse.Mod
+	[StaticConstructorOnStartup]
+	static class HarmonyPatches
 	{
-		public HarmonyPatches(ModContentPack content) : base(content)
+		static HarmonyPatches()
 		{
-			var harmony = new Harmony("Azuraal.ChoiceOfPsycasts");
-			var assembly = Assembly.GetExecutingAssembly();
+			Harmony harmony = new Harmony("Azuraal.ChoiceOfPsycasts");
+			Assembly assembly = Assembly.GetExecutingAssembly();
 			harmony.PatchAll(assembly);
 		}
 	}
