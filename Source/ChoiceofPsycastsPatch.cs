@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Verse;
@@ -52,7 +53,18 @@ namespace ChoiceOfPsycasts
 				if (pawn.GetPsylinkLevel() > 0 && pawn.GetPsylinkLevel() < 7)
 				{
 					if (pawn.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast == null) pawn.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast = new List<int>();
-					pawn.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Add(pawn.GetPsylinkLevel());
+					for (int i = 0; i < ChoiceOfPsycastsMod.Settings.PsycastPicks; i++)
+					{
+						pawn.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Add(pawn.GetPsylinkLevel());
+					}
+					if (pawn.GetPsylinkLevel() > 1 && ChoiceOfPsycastsMod.Settings.PsycastPicksPrev > 0)
+					{
+						for (int i = 0; i < ChoiceOfPsycastsMod.Settings.PsycastPicksPrev; i++)
+						{
+							pawn.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Add(pawn.GetPsylinkLevel() - 1);
+						}
+					}
+					pawn.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Sort();
 				}
 				else Log.Error("ChoiceOfPsycasts: Tried giving incorrect level Psycast");
 			}

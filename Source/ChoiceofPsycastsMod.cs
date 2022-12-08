@@ -186,21 +186,9 @@ namespace ChoiceOfPsycasts
 					DummyPsycasts[i].def.level = i;
 				}
 			}
-			UpgradablePsycastsFrameworkIntegration UPFI = null;
-			if (ModLister.HasActiveModWithName("Psycast Upgrade Framework"))
-			{
-				UPFI = new UpgradablePsycastsFrameworkIntegration();
-			}
 			List<AbilityDef> Abilities = DefDatabase<AbilityDef>.AllDefsListForReading;
 			foreach (AbilityDef Ability in Abilities)
 			{
-				if (UPFI != null && Ability.modExtensions != null)
-				{
-					var ModExtension = Ability.modExtensions.Find(Ext => Ext.GetType() == UPFI.UPFExtension);
-					if (ModExtension != null)
-						if ((bool)UPFI.UPFUgradeOnlyField.GetValue(ModExtension))
-							continue;
-				}
 				if (Ability.abilityClass == typeof(Psycast) && Ability.level > 0 && Ability.level < 7)
 				{
 					Psycasts[Ability.level].Add(Ability);
@@ -214,19 +202,27 @@ namespace ChoiceOfPsycasts
 		public ChoiceOfPsycastsMod(ModContentPack content) : base(content)
 		{
 			Settings = GetSettings<RimWorld.ChoiceOfPsycasts.ChoiceOfPsycastsSettings>();
+			if (Settings.PsycastOptions == 0)
+			{ 
+				Settings.PsycastOptions = 1;
+				Settings.PsycastPicks = 0;
+			}
 		}
 
 		public override void DoSettingsWindowContents(Rect inRect)
 		{
-			Listing_Standard listingStandard = new Listing_Standard();
-			listingStandard.Begin(inRect);
-			if (Settings.PsycastOptions == 1)
-				listingStandard.Label("Psycast Options: All");
-			else if (Settings.PsycastOptions == 0)
-				listingStandard.Label("Psycast Options: No free Psycasts");
-			else listingStandard.Label("Psycast Options: " + Settings.PsycastOptions.ToString());
-			Settings.PsycastOptions = (int)Math.Round(listingStandard.Slider(Settings.PsycastOptions, 0, 5), 0);
-			listingStandard.End();
+			Listing_Standard settingsMenu = new Listing_Standard();
+			settingsMenu.Begin(inRect);
+			if (Settings.PsycastOptions == 1) settingsMenu.Label("Psycast Options: All");
+			else settingsMenu.Label("Psycast Options: " + Settings.PsycastOptions.ToString());
+			Settings.PsycastOptions = (int)settingsMenu.Slider(Settings.PsycastOptions, 1, 5);
+
+			settingsMenu.Label("Psycast Picks Of New Level: " + Settings.PsycastPicks.ToString());
+			Settings.PsycastPicks = (int)settingsMenu.Slider(Settings.PsycastPicks, 0, 3);
+			
+			settingsMenu.Label("Psycast Picks Of Previous Level: " + Settings.PsycastPicksPrev.ToString());
+			Settings.PsycastPicksPrev = (int)settingsMenu.Slider(Settings.PsycastPicksPrev, 0, 3);
+			settingsMenu.End();
 			base.DoSettingsWindowContents(inRect);
 		}
 		public override string SettingsCategory()
@@ -243,9 +239,13 @@ namespace RimWorld
 		public class ChoiceOfPsycastsSettings : ModSettings
 		{
 			public int PsycastOptions = 1;
+			public int PsycastPicks = 1;
+			public int PsycastPicksPrev = 0;
 			public override void ExposeData()
 			{
-				Scribe_Values.Look(ref PsycastOptions, "PsycastOptions", defaultValue: 1); ;
+				Scribe_Values.Look(ref PsycastOptions, "PsycastOptions", defaultValue: 1);
+				Scribe_Values.Look(ref PsycastPicks, "PsycastPicks", defaultValue: 1);
+				Scribe_Values.Look(ref PsycastPicksPrev, "PsycastPicksPrev", defaultValue: 0);
 				base.ExposeData();
 			}
 		}
