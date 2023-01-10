@@ -83,7 +83,7 @@ namespace ChoiceOfPsycasts
 			Parent = pawn;
 			defaultLabel = $"{"LearnAPsycast".Translate()}";
 			defaultDesc = $"{"LearnAPsycastDesc".Translate()}";
-			icon = ContentFinder<Texture2D>.Get("Level" + level.ToString());
+			icon = AbilityLibrary.IconLevel[level].Texture;
 		}
 		public LearnPsycasts(Tuple<int, int> range, Pawn pawn)
 		{
@@ -92,21 +92,21 @@ namespace ChoiceOfPsycasts
 			Parent = pawn;
 			defaultLabel = $"{"LearnAPsycast".Translate()}";
 			defaultDesc = $"{"LearnAPsycastDesc".Translate()}";
-			if (Range.Item1 != Range.Item2) icon = ContentFinder<Texture2D>.Get("Misc");
-			else icon = ContentFinder<Texture2D>.Get("Level" + Range.Item1.ToString());
+			if (Range.Item1 != Range.Item2) icon = AbilityLibrary.IconMisc.Texture;
+			else icon = AbilityLibrary.IconLevel[Range.Item1].Texture;
 		}
 		private void Choice()
 		{
 			List<FloatMenuOption> options = new List<FloatMenuOption>();
-			foreach (AbilityDef Psycast in AbilityLibrary.Psycasts[Level])
+			foreach (Tuple<AbilityDef, CachedTexture> Psycast in AbilityLibrary.Psycasts[Level])
 			{
-				if (!Parent.abilities.AllAbilitiesForReading.Exists(x => x.def.defName == Psycast.defName))
+				if (!Parent.abilities.AllAbilitiesForReading.Exists(x => x.def.defName == Psycast.Item1.defName))
 				{
-					FloatMenuOption option = new FloatMenuOption(Psycast.label, delegate
+					FloatMenuOption option = new FloatMenuOption(Psycast.Item1.label, delegate
 					{
-						Parent.abilities.GainAbility(Psycast);
+						Parent.abilities.GainAbility(Psycast.Item1);
 						Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Remove(Level);
-					}, ContentFinder<Texture2D>.Get(Psycast.iconPath), Color.white, MenuOptionPriority.Default, null, null, 30, Rect => Verse.Widgets.InfoCardButton(Rect.ScaledBy(0.7f), Psycast));
+					}, Psycast.Item2.Texture, Color.white, MenuOptionPriority.Default, null, null, 30, Rect => Verse.Widgets.InfoCardButton(Rect.ScaledBy(0.7f), Psycast.Item1));
 					options.Add(option);
 				}
 			}
@@ -135,15 +135,15 @@ namespace ChoiceOfPsycasts
 			List<FloatMenuOption> options = new List<FloatMenuOption>();
 			foreach (var i in Enumerable.Range(Range.Item1, Range.Item2 - Range.Item1 + 1))
 			{
-				foreach (AbilityDef Psycast in AbilityLibrary.Psycasts[i])
+				foreach (Tuple<AbilityDef, CachedTexture> Psycast in AbilityLibrary.Psycasts[i])
 				{
-					if (!Parent.abilities.AllAbilitiesForReading.Exists(x => x.def.defName == Psycast.defName))
+					if (!Parent.abilities.AllAbilitiesForReading.Exists(x => x.def.defName == Psycast.Item1.defName))
 					{
-						FloatMenuOption option = new FloatMenuOption(Psycast.label, delegate
+						FloatMenuOption option = new FloatMenuOption(Psycast.Item1.label, delegate
 						{
-							Parent.abilities.GainAbility(Psycast);
+							Parent.abilities.GainAbility(Psycast.Item1);
 							Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom.Remove(Range);
-						}, ContentFinder<Texture2D>.Get(Psycast.iconPath), Color.white, MenuOptionPriority.Default, null, null, 30, Rect => Verse.Widgets.InfoCardButton(Rect.ScaledBy(0.7f), Psycast));
+						}, Psycast.Item2.Texture, Color.white, MenuOptionPriority.Default, null, null, 30, Rect => Verse.Widgets.InfoCardButton(Rect.ScaledBy(0.7f), Psycast.Item1));
 						options.Add(option);
 					}
 				}
@@ -172,13 +172,16 @@ namespace ChoiceOfPsycasts
 	[StaticConstructorOnStartup]
 	public static class AbilityLibrary
 	{
-		public static Dictionary<int, List<AbilityDef>> Psycasts = new Dictionary<int, List<AbilityDef>>();
+		public static Dictionary<int, List<Tuple<AbilityDef, CachedTexture>>> Psycasts = new Dictionary<int, List<Tuple<AbilityDef, CachedTexture>>>();
 		public static Dictionary<int, Ability> DummyPsycasts = new Dictionary<int, Ability>();
+		public static Dictionary<int, CachedTexture> IconLevel = new Dictionary<int, CachedTexture>(); 
+		public static CachedTexture IconMisc = new CachedTexture("Misc");
 		static AbilityLibrary()
 		{
 			foreach (var i in Enumerable.Range(1, 6))
 			{
-				Psycasts.Add(i, new List<AbilityDef>());
+				Psycasts.Add(i, new List<Tuple<AbilityDef, CachedTexture>>());
+				IconLevel.Add(i, new CachedTexture("Level"+i.ToString()));
 				DummyPsycasts.Add(i, new Ability());
 				{
 					DummyPsycasts[i].def = new AbilityDef();
@@ -191,7 +194,7 @@ namespace ChoiceOfPsycasts
 			{
 				if (Ability.abilityClass == typeof(Psycast) && Ability.level > 0 && Ability.level < 7)
 				{
-					Psycasts[Ability.level].Add(Ability);
+					Psycasts[Ability.level].Add(new Tuple<AbilityDef, CachedTexture>(Ability, new CachedTexture(Ability.iconPath)));
 				}
 			}
 		}
