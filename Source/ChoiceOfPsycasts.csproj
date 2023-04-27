@@ -2,10 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
-		<RootNamespace>ChoiceOfPsycasts</RootNamespace>
-		<AssemblyName>ChoiceOfPsycasts</AssemblyName>
 		<TargetFramework>net472</TargetFramework>
-		<FileAlignment>512</FileAlignment>
 		<Deterministic>true</Deterministic>
 		<Configuration>Release</Configuration>
 		<DebugType>none</DebugType>
