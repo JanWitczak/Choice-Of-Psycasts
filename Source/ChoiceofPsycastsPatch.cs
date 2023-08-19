@@ -50,7 +50,7 @@ namespace ChoiceOfPsycasts
 			if (pawn.GetComp<ChoiceOfPsycastsComp>() != null)
 			{
 				pawn.abilities.abilities.Remove(AbilityLibrary.DummyPsycasts[pawn.GetPsylinkLevel()]);
-				if (pawn.GetPsylinkLevel() > 0 && pawn.GetPsylinkLevel() < 7)
+				if (AbilityLibrary.ProperLevel(pawn.GetPsylinkLevel()))
 				{
 					if (pawn.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast == null) pawn.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast = new List<int>();
 					for (int i = 0; i < ChoiceOfPsycastsMod.Settings.PsycastPicks; i++)

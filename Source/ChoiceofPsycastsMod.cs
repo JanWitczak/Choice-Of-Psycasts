@@ -18,7 +18,8 @@ namespace ChoiceOfPsycasts
 	public class ChoiceOfPsycastsComp : ThingComp
 	{
 		public List<int> CanLearnPsycast = null;
-		public List<Tuple<int, int>> CanLearnPsycastCustom = null;
+		public List<LevelRange> CanLearnPsycastCustom = null;
+		static Regex regex = new Regex("^ChoiceOfPsycasts:<([1-6]),([1-6])>$");
 		public Pawn Parent
 		{
 			get { return (Pawn)this.parent; }
@@ -30,17 +31,17 @@ namespace ChoiceOfPsycasts
 			{
 				if (CanLearnPsycast != null)
 				{
-					foreach (var i in CanLearnPsycast)
+					foreach (int i in CanLearnPsycast)
 					{
-						yield return new LearnPsycasts(i, Parent);
+						if (AbilityLibrary.ProperLevel(i)) yield return new LearnPsycasts(i, Parent);
 					}
 				}
 			}
 			if (CanLearnPsycastCustom != null)
 			{
-				foreach (var i in CanLearnPsycastCustom)
+				foreach (LevelRange i in CanLearnPsycastCustom)
 				{
-					yield return new LearnPsycasts(i, Parent);
+					if(AbilityLibrary.ProperLevelRange(i)) yield return new LearnPsycasts(i, Parent);
 				}
 			}
 		}
@@ -48,33 +49,40 @@ namespace ChoiceOfPsycasts
 		{
 			if (Scribe.mode == LoadSaveMode.Saving)
 			{
-				if (!CanLearnPsycast.NullOrEmpty()) Scribe_Collections.Look(ref CanLearnPsycast, false, "CanLearnPsycast", LookMode.Value);
-				if (!CanLearnPsycastCustom.NullOrEmpty()) Scribe_Collections.Look(ref CanLearnPsycastCustom, false, "CanLearnPsycastCustom", LookMode.Value);
+				if (!CanLearnPsycast.NullOrEmpty()) 
+				{
+					CanLearnPsycast.RemoveAll(x => !AbilityLibrary.ProperLevel(x));
+					if(CanLearnPsycast.Count > 0) Scribe_Collections.Look(ref CanLearnPsycast, "CanLearnPsycast", LookMode.Value);
+				}
+				if (!CanLearnPsycastCustom.NullOrEmpty())
+				{
+					CanLearnPsycastCustom.RemoveAll(x => !AbilityLibrary.ProperLevelRange(x));
+					if(CanLearnPsycastCustom.Count > 0) Scribe_Collections.Look(ref CanLearnPsycastCustom, "CanLearnPsycastCustom", LookMode.Deep);
+				}
 			}
 			else
 			{
-				Scribe_Collections.Look(ref CanLearnPsycast, false, "CanLearnPsycast", LookMode.Value);
-				Scribe_Collections.Look(ref CanLearnPsycastCustom, false, "CanLearnPsycastCustom", LookMode.Value);
+				Scribe_Collections.Look(ref CanLearnPsycast, "CanLearnPsycast", LookMode.Value);
+				Scribe_Collections.Look(ref CanLearnPsycastCustom, "CanLearnPsycastCustom", LookMode.Deep);
 			}
 		}
 		public override void ReceiveCompSignal(string signal)
 		{
-			Regex reg = new Regex("^ChoiceOfPsycasts:<([1-6]),([1-6])>$");
-			Match m = reg.Match(signal);
+			Match m = regex.Match(signal);
 			if (m.Success)
 			{
 				int min = int.Parse(m.Groups[1].Value);
 				int max = int.Parse(m.Groups[2].Value);
-				if (Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom == null) Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom = new List<Tuple<int, int>>();
-				if (min < max) Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom.Add(new Tuple<int, int>(min, max));
-				else Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom.Add(new Tuple<int, int>(max, min));
+				if (Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom == null) Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom = new List<LevelRange>();
+				if (min <= max) Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom.Add(new LevelRange(min, max));
+				else Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycastCustom.Add(new LevelRange(max, min));
 			}
 		}
 	}
 	class LearnPsycasts : Command_Action
 	{
 		private int Level;
-		private Tuple<int, int> Range = null;
+		private LevelRange Range;
 		Pawn Parent;
 		public LearnPsycasts(int level, Pawn pawn)
 		{
@@ -85,20 +93,20 @@ namespace ChoiceOfPsycasts
 			defaultDesc = $"{"LearnAPsycastDesc".Translate()}";
 			icon = AbilityLibrary.IconLevel[level].Texture;
 		}
-		public LearnPsycasts(Tuple<int, int> range, Pawn pawn)
+		public LearnPsycasts(LevelRange range, Pawn pawn)
 		{
 			action = ChoiceCustom;
 			Range = range;
 			Parent = pawn;
 			defaultLabel = $"{"LearnAPsycast".Translate()}";
 			defaultDesc = $"{"LearnAPsycastDesc".Translate()}";
-			if (Range.Item1 != Range.Item2) icon = AbilityLibrary.IconMisc.Texture;
-			else icon = AbilityLibrary.IconLevel[Range.Item1].Texture;
+			if (Range.low != Range.high) icon = AbilityLibrary.IconMisc.Texture;
+			else icon = AbilityLibrary.IconLevel[Range.low].Texture;
 		}
 		private void Choice()
 		{
 			List<FloatMenuOption> options = new List<FloatMenuOption>();
-			foreach (Tuple<AbilityDef, CachedTexture> Psycast in AbilityLibrary.Psycasts[Level])
+			foreach ((AbilityDef, CachedTexture) Psycast in AbilityLibrary.Psycasts[Level])
 			{
 				if (!Parent.abilities.AllAbilitiesForReading.Exists(x => x.def.defName == Psycast.Item1.defName))
 				{
@@ -133,9 +141,9 @@ namespace ChoiceOfPsycasts
 		private void ChoiceCustom()
 		{
 			List<FloatMenuOption> options = new List<FloatMenuOption>();
-			foreach (var i in Enumerable.Range(Range.Item1, Range.Item2 - Range.Item1 + 1))
+			for (int i = Range.low; i <= Range.high; i++)
 			{
-				foreach (Tuple<AbilityDef, CachedTexture> Psycast in AbilityLibrary.Psycasts[i])
+				foreach ((AbilityDef, CachedTexture) Psycast in AbilityLibrary.Psycasts[i])
 				{
 					if (!Parent.abilities.AllAbilitiesForReading.Exists(x => x.def.defName == Psycast.Item1.defName))
 					{
@@ -150,7 +158,7 @@ namespace ChoiceOfPsycasts
 			}
 			if (ChoiceOfPsycastsMod.Settings.PsycastOptions > 1)
 			{
-				System.Random rnd = new System.Random(Range.Item1 + Range.Item2 + Parent.abilities.abilities.Count + Parent.GetHashCode());
+				System.Random rnd = new System.Random(Range.low + Range.high + Parent.abilities.abilities.Count + Parent.GetHashCode());
 				foreach (var i in Enumerable.Range(0, Math.Max(options.Count() - ChoiceOfPsycastsMod.Settings.PsycastOptions, 0)))
 				{
 					options.RemoveAt(rnd.Next(options.Count()));
@@ -172,7 +180,7 @@ namespace ChoiceOfPsycasts
 	[StaticConstructorOnStartup]
 	public static class AbilityLibrary
 	{
-		public static Dictionary<int, List<Tuple<AbilityDef, CachedTexture>>> Psycasts = new Dictionary<int, List<Tuple<AbilityDef, CachedTexture>>>();
+		public static Dictionary<int, List<(AbilityDef, CachedTexture)>> Psycasts = new Dictionary<int, List<(AbilityDef, CachedTexture)>>();
 		public static Dictionary<int, Ability> DummyPsycasts = new Dictionary<int, Ability>();
 		public static Dictionary<int, CachedTexture> IconLevel = new Dictionary<int, CachedTexture>(); 
 		public static CachedTexture IconMisc = new CachedTexture("Misc");
@@ -180,13 +188,15 @@ namespace ChoiceOfPsycasts
 		{
 			foreach (var i in Enumerable.Range(1, 6))
 			{
-				Psycasts.Add(i, new List<Tuple<AbilityDef, CachedTexture>>());
+				Psycasts.Add(i, new List<(AbilityDef, CachedTexture)>());
 				IconLevel.Add(i, new CachedTexture("Level"+i.ToString()));
 				DummyPsycasts.Add(i, new Ability());
 				{
-					DummyPsycasts[i].def = new AbilityDef();
-					DummyPsycasts[i].def.defName = "DummyPsycast" + i.ToString();
-					DummyPsycasts[i].def.level = i;
+					DummyPsycasts[i].def = new AbilityDef
+					{
+						defName = "DummyPsycast" + i.ToString(),
+						level = i
+					};
 				}
 			}
 			List<AbilityDef> Abilities = DefDatabase<AbilityDef>.AllDefsListForReading;
@@ -194,9 +204,19 @@ namespace ChoiceOfPsycasts
 			{
 				if (Ability.abilityClass == typeof(Psycast) && Ability.level > 0 && Ability.level < 7)
 				{
-					Psycasts[Ability.level].Add(new Tuple<AbilityDef, CachedTexture>(Ability, new CachedTexture(Ability.iconPath)));
+					Psycasts[Ability.level].Add((Ability, new CachedTexture(Ability.iconPath)));
 				}
 			}
+		}
+		public static bool ProperLevel(int i)
+		{
+			if(i > 0 && i < 7) return true;
+			else return false;
+		}
+		public static bool ProperLevelRange(LevelRange i)
+		{
+			if(i.low > 0 && i.low < 7 && i.high >= i.low && i.high < 7) return true;
+			else return false;
 		}
 	}
 	public class ChoiceOfPsycastsMod : Verse.Mod
@@ -231,6 +251,22 @@ namespace ChoiceOfPsycasts
 		public override string SettingsCategory()
 		{
 			return "Choice Of Psycasts";
+		}
+	}
+	public struct LevelRange : IExposable
+	{
+		public int low;
+		public int high;
+
+		public LevelRange(int a, int b)
+		{
+			low = a;
+			high = b;
+		}
+		public void ExposeData()
+		{
+			Scribe_Values.Look(ref low, "low");
+			Scribe_Values.Look(ref high, "high");
 		}
 	}
 }
