@@ -8,11 +8,11 @@
 		<DebugType>none</DebugType>
 		<Optimize>true</Optimize>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-		<OutputPath>../1.4/Assemblies/</OutputPath>
+		<OutputPath>../1.5/Assemblies/</OutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Krafs.Rimworld.Ref" Version="1.4.*"/>
-		<PackageReference Include="Lib.Harmony" Version="2.2.2"/>
+		<PackageReference Include="Krafs.Rimworld.Ref" Version="1.5.4046-beta"/>
+		<PackageReference Include="Lib.Harmony" Version="2.3.*"/>
 	</ItemGroup>
 </Project>
