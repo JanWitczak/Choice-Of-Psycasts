@@ -41,7 +41,7 @@ namespace ChoiceOfPsycasts
 			{
 				foreach (LevelRange i in CanLearnPsycastCustom)
 				{
-					if(AbilityLibrary.ProperLevelRange(i)) yield return new LearnPsycasts(i, Parent);
+					if (AbilityLibrary.ProperLevelRange(i)) yield return new LearnPsycasts(i, Parent);
 				}
 			}
 		}
@@ -49,15 +49,15 @@ namespace ChoiceOfPsycasts
 		{
 			if (Scribe.mode == LoadSaveMode.Saving)
 			{
-				if (!CanLearnPsycast.NullOrEmpty()) 
+				if (!CanLearnPsycast.NullOrEmpty())
 				{
 					CanLearnPsycast.RemoveAll(x => !AbilityLibrary.ProperLevel(x));
-					if(CanLearnPsycast.Count > 0) Scribe_Collections.Look(ref CanLearnPsycast, "CanLearnPsycast", LookMode.Value);
+					if (CanLearnPsycast.Count > 0) Scribe_Collections.Look(ref CanLearnPsycast, "CanLearnPsycast", LookMode.Value);
 				}
 				if (!CanLearnPsycastCustom.NullOrEmpty())
 				{
 					CanLearnPsycastCustom.RemoveAll(x => !AbilityLibrary.ProperLevelRange(x));
-					if(CanLearnPsycastCustom.Count > 0) Scribe_Collections.Look(ref CanLearnPsycastCustom, "CanLearnPsycastCustom", LookMode.Deep);
+					if (CanLearnPsycastCustom.Count > 0) Scribe_Collections.Look(ref CanLearnPsycastCustom, "CanLearnPsycastCustom", LookMode.Deep);
 				}
 			}
 			else
@@ -182,20 +182,21 @@ namespace ChoiceOfPsycasts
 	{
 		public static Dictionary<int, List<(AbilityDef, CachedTexture)>> Psycasts = new Dictionary<int, List<(AbilityDef, CachedTexture)>>();
 		public static Dictionary<int, Ability> DummyPsycasts = new Dictionary<int, Ability>();
-		public static Dictionary<int, CachedTexture> IconLevel = new Dictionary<int, CachedTexture>(); 
+		public static Dictionary<int, CachedTexture> IconLevel = new Dictionary<int, CachedTexture>();
 		public static CachedTexture IconMisc = new CachedTexture("Misc");
 		static AbilityLibrary()
 		{
 			foreach (var i in Enumerable.Range(1, 6))
 			{
 				Psycasts.Add(i, new List<(AbilityDef, CachedTexture)>());
-				IconLevel.Add(i, new CachedTexture("Level"+i.ToString()));
+				IconLevel.Add(i, new CachedTexture("Level" + i.ToString()));
 				DummyPsycasts.Add(i, new Ability());
 				{
 					DummyPsycasts[i].def = new AbilityDef
 					{
 						defName = "DummyPsycast" + i.ToString(),
-						level = i
+						level = i,
+						abilityClass = typeof(Psycast)
 					};
 				}
 			}
@@ -210,12 +211,12 @@ namespace ChoiceOfPsycasts
 		}
 		public static bool ProperLevel(int i)
 		{
-			if(i > 0 && i < 7) return true;
+			if (i > 0 && i < 7) return true;
 			else return false;
 		}
 		public static bool ProperLevelRange(LevelRange i)
 		{
-			if(i.low > 0 && i.low < 7 && i.high >= i.low && i.high < 7) return true;
+			if (i.low > 0 && i.low < 7 && i.high >= i.low && i.high < 7) return true;
 			else return false;
 		}
 	}
@@ -226,7 +227,7 @@ namespace ChoiceOfPsycasts
 		{
 			Settings = GetSettings<RimWorld.ChoiceOfPsycasts.ChoiceOfPsycastsSettings>();
 			if (Settings.PsycastOptions == 0)
-			{ 
+			{
 				Settings.PsycastOptions = 1;
 				Settings.PsycastPicks = 0;
 			}
@@ -242,7 +243,7 @@ namespace ChoiceOfPsycasts
 
 			settingsMenu.Label("Psycast Picks Of New Level: " + Settings.PsycastPicks.ToString());
 			Settings.PsycastPicks = (int)settingsMenu.Slider(Settings.PsycastPicks, 0, 3);
-			
+
 			settingsMenu.Label("Psycast Picks Of Previous Level: " + Settings.PsycastPicksPrev.ToString());
 			Settings.PsycastPicksPrev = (int)settingsMenu.Slider(Settings.PsycastPicksPrev, 0, 3);
 			settingsMenu.End();
