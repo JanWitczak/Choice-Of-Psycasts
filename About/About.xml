@@ -22,8 +22,8 @@
 		</li>
 	</modDependencies>
 	<loadAfter>
-        <li>brrainz.harmony</li>
+		<li>brrainz.harmony</li>
 		<li>Ludeon.RimWorld.Royalty</li>
-    </loadAfter>
+	</loadAfter>
 <description>Allows manual selection of psycasts gained when increasing psylink level.</description>
 </ModMetaData>
