@@ -21,9 +21,12 @@
 			<downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
 		</li>
 	</modDependencies>
+	<incompatibleWith>
+		<li>VanillaExpanded.VPsycastsE</li>
+	</incompatibleWith>
 	<loadAfter>
-        <li>brrainz.harmony</li>
+		<li>brrainz.harmony</li>
 		<li>Ludeon.RimWorld.Royalty</li>
-    </loadAfter>
+	</loadAfter>
 <description>Allows manual selection of psycasts gained when increasing psylink level.</description>
 </ModMetaData>
