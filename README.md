@@ -1,9 +1,9 @@
 # Choice of Psycasts
 
-This is a mod for game Rimworld.
+This is a mod for game RimWorld by Ludeon Studios.
 
 ## Description
-Allows manual selection of psycasts gained when increasing psylink level.
+This mod allows manual selection of psycasts gained when increasing psylink level.
 
 When a pawn gains a psylink level, either by linking with Anima tree, during a bestowing ceremony or by using Psylink neuroformer instead of gaining a random psycast, you will be allowed to choose the gained psycast. The list of available psycasts is generated on startup and as such this mod is implicitly compatible with any mod adding new psycasts.
 
