@@ -19,8 +19,13 @@ namespace ChoiceOfPsycasts
 	{
 		public List<int> CanLearnPsycast = null;
 		public List<LevelRange> CanLearnPsycastCustom = null;
-		static Regex regex = new Regex("^ChoiceOfPsycasts:<([1-6]),([1-6])>$");
-		public Pawn Parent
+        //static Regex regex = new Regex("^ChoiceOfPsycasts:<([1-6]),([1-6])>$");
+
+        static int maxValue = (int)HediffDefOf.PsychicAmplifier.maxSeverity;
+        static string numberPattern = string.Join("|", Enumerable.Range(1, maxValue));
+        static string pattern = $@"^ChoiceOfPsycasts:<({numberPattern}),({numberPattern})>$";
+        Regex regex = new Regex(pattern);
+        public Pawn Parent
 		{
 			get { return (Pawn)this.parent; }
 		}
@@ -133,7 +138,7 @@ namespace ChoiceOfPsycasts
 			}
 			else
 			{
-				options.Add(new FloatMenuOption("No Availible Psycasts", delegate { Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Remove(Level); }));
+				options.Add(new FloatMenuOption("No Available Psycasts", delegate { Parent.GetComp<ChoiceOfPsycastsComp>().CanLearnPsycast.Remove(Level); }));
 				FloatMenu menu = new FloatMenu(options);
 				Find.WindowStack.Add(menu);
 			}
@@ -184,10 +189,15 @@ namespace ChoiceOfPsycasts
 		public static Dictionary<int, Ability> DummyPsycasts = new Dictionary<int, Ability>();
 		public static Dictionary<int, CachedTexture> IconLevel = new Dictionary<int, CachedTexture>();
 		public static CachedTexture IconMisc = new CachedTexture("Misc");
+
 		static AbilityLibrary()
 		{
-			foreach (var i in Enumerable.Range(1, 6))
+			int maxLevel = ModLister.HasActiveModWithName("Cooler Psycasts") ? 10 : 6;
+            foreach (var i in Enumerable.Range(1, maxLevel))
 			{
+
+				Log.Message("DummyPsycast" + i.ToString());
+
 				Psycasts.Add(i, new List<(AbilityDef, CachedTexture)>());
 				IconLevel.Add(i, new CachedTexture("Level" + i.ToString()));
 				DummyPsycasts.Add(i, new Ability());
@@ -203,7 +213,7 @@ namespace ChoiceOfPsycasts
 			List<AbilityDef> Abilities = DefDatabase<AbilityDef>.AllDefsListForReading;
 			foreach (AbilityDef Ability in Abilities)
 			{
-				if (Ability.abilityClass == typeof(Psycast) && Ability.level > 0 && Ability.level < 7)
+				if (Ability.abilityClass == typeof(Psycast) && Ability.level > 0 && Ability.level <= (int)HediffDefOf.PsychicAmplifier.maxSeverity)
 				{
 					Psycasts[Ability.level].Add((Ability, new CachedTexture(Ability.iconPath)));
 				}
@@ -211,12 +221,12 @@ namespace ChoiceOfPsycasts
 		}
 		public static bool ProperLevel(int i)
 		{
-			if (i > 0 && i < 7) return true;
+			if (i > 0 && i <= (int)HediffDefOf.PsychicAmplifier.maxSeverity) return true;
 			else return false;
 		}
 		public static bool ProperLevelRange(LevelRange i)
 		{
-			if (i.low > 0 && i.low < 7 && i.high >= i.low && i.high < 7) return true;
+			if (i.low > 0 && i.low <= (int)HediffDefOf.PsychicAmplifier.maxSeverity && i.high >= i.low && i.high <= (int)HediffDefOf.PsychicAmplifier.maxSeverity) return true;
 			else return false;
 		}
 	}
