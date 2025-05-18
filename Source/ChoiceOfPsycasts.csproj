@@ -2,19 +2,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
-		<TargetFramework>net472</TargetFramework>
+		<TargetFramework>net48</TargetFramework>
 		<Deterministic>true</Deterministic>
 		<Configuration>Release</Configuration>
 		<DebugType>none</DebugType>
 		<Optimize>true</Optimize>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-		<BaseOutputPath>../1.5/Assemblies/</BaseOutputPath>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-	  <IsPublishable>False</IsPublishable>
+		<Configurations>Release</Configurations>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-	  <IsPublishable>False</IsPublishable>
+	  <IsPublishable>True</IsPublishable>
 	</PropertyGroup>
 
 	<ItemGroup>

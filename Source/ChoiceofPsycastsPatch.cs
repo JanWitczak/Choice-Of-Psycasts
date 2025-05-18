@@ -74,7 +74,7 @@ namespace ChoiceOfPsycasts
 		{
 			if (pawn.GetComp<ChoiceOfPsycastsComp>() != null)
 			{
-				if (pawn.GetPsylinkLevel() < (int)HediffDefOf.PsychicAmplifier.maxSeverity) pawn.abilities.abilities.Add(AbilityLibrary.DummyPsycasts[pawn.GetPsylinkLevel() + 1]);
+				if (pawn.GetPsylinkLevel() < AbilityLibrary.MaxLevel) pawn.abilities.abilities.Add(AbilityLibrary.DummyPsycasts[pawn.GetPsylinkLevel() + 1]);
 			}
 		}
 	}
